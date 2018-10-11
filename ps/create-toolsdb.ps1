@@ -34,8 +34,17 @@
         Import-Module sqlps -DisableNameChecking
         Pop-Location
     }
+
+    $Continue = $true
     $logFile = $Source+'\log.txt'
+    if (!(Test-Path $logfile))
+    {
+    New-Item -path $Source -name log.txt -type "file"
+    }
+    ELSE
+    {
     Clear-Content -Path $logFile
+    }
     $Time = Get-Date
     "*********Database Creation started at $Time ***********" | out-file $logFile -append
 
@@ -48,7 +57,7 @@
     {
     Write-Host "Connection to $computerName Could not be established. Install Cancelled"
     "Connection to $computerName Could not be established. Install cancelled at $time" | out-file $logFile -append
-    #exit
+    Exit
     }
 
 
@@ -59,7 +68,7 @@
     {
     write-Host "SA account $sa could no be verified. Installed Cancelled"
     "SA Account $sa could not be verified. Install Cancelled" | out-file $login -Append
-    #exit
+    Exit
     }
 
 
@@ -68,9 +77,9 @@
     If ($dbExists -eq $false)
     {
 
-    $CreateStart = Confirm-Start -ErrorAction Stop
+    $ConfirmStart = Confirm-Start -ErrorAction Stop
 
-    if ($CreateStart -eq $true)
+    if ($ConfirmStart -eq $true)
     {
 
     write-host "DB Creation about to start"
@@ -82,11 +91,11 @@
     Create-Tables $ComputerName $Source -ErrorAction Stop
     }
 
-    elseif ($CreateStart -eq $false)
+    elseif ($ConfirmStart -eq $false)
     {
      write-host "The Answer was no. therefore DB Creation cancelled"
-     "DB Creation cancelled" | out-file $logFile -append
-     #exit
+     "DB Creation cancelled by user" | out-file $logFile -append
+     Exit
     }
 
     }
@@ -95,8 +104,8 @@
 
     {
 
-    $Upgrade = Confirm-upgrade -ErrorAction stop
-    if ($upgrade -eq $true)
+    $confirmCreate = Confirm-Create -ErrorAction stop
+    if ($Confirmcreate -eq $true)
     {
 
     $BackUp = Confirm-Backup -ErrorAction Stop
@@ -104,27 +113,53 @@
     if ($Backup -eq $true)
     { 
 
-    write-host "Backup of $database has been confirmed. The upgrade will now start"
-    "Backup of $database has been confirmed. The upgrade will now start...." | out-file $logFile -append
+    write-host "Backup of $database has been confirmed. The creation will now start"
+    "Backup of $database has been confirmed. The creation will now start...." | out-file $logFile -append
+        
+    Create-DB $ComputerName $Source -ErrorAction Stop
 
-    Ugrade-DB $ComputerName $Source -ErrorAction Stop
+    Create-Tables $ComputerName $Source -ErrorAction Stop
     }
 
     else
     {
 
-    write-host "Backup of $database has not been confirmed. Therefore the Upgrade has been cancelled"
-    "Backup of $database has not been confirmed. Therefore the Upgrade has been cancelled" | out-file $logFile -append
-    #exit
+    write-host "Backup of $database has not been confirmed. Therefore the creation has been cancelled"
+    "Backup of $database has not been confirmed. Therefore the creation has been cancelled" | out-file $logFile -append
+    Exit
     }
 
     }
 
-    Elseif ($upgrade -eq $false)
+    Elseif ($ConfirmCreate -eq $false)
     {
-    write-host "Upgrade of $database not confirmed, therefore the upgrade has been cancelled"
-    "Upgrade of $database not confirmed, therefore the upgrade has been cancelled" | out-file $logFile -append
-    #exit
+
+    write-host "Recreation of $database not confirmed"
+    "Recreation of $database not confirmed" | out-file $logFile -append
+
+    $ConfirmUpgrade = Confirm-upgrade -ErrorAction Stop
+    If ($ConfirmUpgrade -eq $true)
+    {
+
+    $BackUp = Confirm-Backup -ErrorAction Stop
+
+    if ($Backup -eq $true)
+    { 
+
+    write-host "Backup of $database has been confirmed. The update will now start"
+    "Backup of $database has been confirmed. The update will now start...." | out-file $logFile -append
+    }
+
+    else
+    {
+
+    write-host "Backup of $database has not been confirmed. Therefore the creation has been cancelled"
+    "Backup of $database has not been confirmed. Therefore the creation has been cancelled" | out-file $logFile -append
+    Exit
+    }
+
+
+    }
 
     }
 
@@ -149,7 +184,6 @@
             $ErrorMessage = $_.Exception.Message
             Write-Error -Message $ErrorMessage
             "Install of $failed @ $time :  $errorMessage " | out-file $logFile -append
-            #exit
 			           
 		}
 
@@ -598,8 +632,9 @@ Function Change-JobOwnersScript {
 
 
         }
-
-            "Job Owners Changed at $Time" | out-file $logFile -append
+         Write-Host "Job Owners Changed to $sa at" -BackgroundColor DarkGreen -ForegroundColor Yellow
+        "Job Owners Changed at $Time" | out-file $logFile -append
+            
 
         }
         Catch {
@@ -613,6 +648,7 @@ Function Change-JobOwnersScript {
         {
 
         }
+
     }
 
 }
@@ -670,70 +706,6 @@ Param(
 
 
 
-Function Ugrade-DB
-
-{
-
-Param(
-          [ValidateLength(0,100)][string]$ComputerName
-        , [ValidateLength(0,80)][string]$Source
-    )
-    Process
-    {
-
-    Try
-    {
-    $UpgradeRoot = $Source + "\Upgrade"
-    $Upgradescripts = Get-ChildItem $upgraderoot |  Where-Object {$_.Extension -eq ".sql"} | Sort-Object
-    write-host "The Database will now be Upgraded" -BackgroundColor DarkGreen -ForegroundColor Yellow
-
-            foreach ($s in $Upgradescripts)
-            {
-
-            if ($Database -ne 'Tools')
-        {
-
-        $query = Replace-String -Script $s.FullName -Source 'Tools' -Replace $Database
-        Write-Host "Running Script : " $s.Name -BackgroundColor DarkGreen -ForegroundColor White
-        Invoke-Sqlcmd -ServerInstance $ComputerName -query $query
-        }
-        Else
-        {
-        Write-Host "Running Script : " $s.Name -BackgroundColor DarkGreen -ForegroundColor White
-
-        $script = $s.FullName
-        Invoke-Sqlcmd -ServerInstance $ComputerName -InputFile $script
-        
-        }
-
-
-
-            }
-
-
-    }
-
-    Catch
-
-    {
-    $ErrorMessage = $_.Exception.Message
-    Write-Error -Message $ErrorMessage
-    $ErrorMessage| out-file $logFile -append
-
-    }
-
-    Finally
-
-    {
-        Write-Host "Database Schema Upgraded" $s.Name -BackgroundColor DarkGreen -ForegroundColor White
-
-    }
-
-}
-
-
-}
-
 
 Function Confirm-Start
 
@@ -779,7 +751,7 @@ Param(
 }
 
 
-Function Confirm-upgrade
+Function Confirm-Create
 
 {
 
@@ -788,24 +760,24 @@ Param(
 
     Process
     {
-    $upgradeStart = $false
+    $ConfirmStart = $false
 
 
     try
     {
-    $input = Read-Host "The database $database already exists on $ComputerName. Do you want to perform an upgrade? (Y/N)"
+    $input = Read-Host "The database $database already exists on $ComputerName. Do you want to overwrite it? (Y/N)"
 
     if ($input -eq 'Y')
     {
 
-    $upgradeStart = $true
+    $ConfirmStart = $true
 
     }
 
     else 
     {
 
-    $upgradeStart = $false
+    $ConfirmStart = $false
 
     }
 
@@ -821,11 +793,61 @@ Param(
 
     }
 
-    return $upgradeStart
+    return $ConfirmStart
 
 }
 
 }
+
+
+Function Confirm-Upgrade
+
+{
+
+Param(
+    )
+
+    Process
+    {
+    $upgrade = $false
+
+
+    try
+    {
+    $input = Read-Host "Would you like to update the stored Procedures, Functions, Alerts and Jobs to the current versions? (Y/N)"
+
+    if ($input -eq 'Y')
+    {
+
+    $upgrade = $true
+
+    }
+
+    else 
+    {
+
+    $Upgrade = $false
+
+    }
+
+    }
+
+
+
+    catch 
+    {
+    $ErrorMessage = $_.Exception.Message
+    Write-Error -Message $ErrorMessage
+    $ErrorMessage| out-file $logFile -append
+
+    }
+
+    return $upgrade
+
+}
+
+}
+
 
 
 Function get-SALogin
