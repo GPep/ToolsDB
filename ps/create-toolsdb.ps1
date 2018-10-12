@@ -677,6 +677,7 @@ Param(
     IF ($db.Name -eq $Database)
     {
     $exists = $true
+    break
     }
     else {
 
