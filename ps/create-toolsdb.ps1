@@ -17,7 +17,7 @@
 
     [Parameter(Mandatory=$false)]
     [ValidateNotNullOrEmpty()]
-    [String]$sa = 'C4rb0n'
+    [String]$sa = 'sa'
     )
 
 
@@ -51,7 +51,7 @@
 
     #Test Connection first
 
-    $Connection = Test-SqlConnection -ComputerName $ComputerName -ErrorAction Stop
+    $Connection = Test-SqlCon -ComputerName $ComputerName -ErrorAction Stop
 
     IF ($Connection -eq $false)
     {
@@ -138,7 +138,14 @@
     "Recreation of $database not confirmed" | out-file $logFile -append
 
     $ConfirmUpgrade = Confirm-upgrade -ErrorAction Stop
-    If ($ConfirmUpgrade -eq $true)
+
+    If ($ConfirmUpgrade -eq $false)
+    {
+    write-host "upgrade not confirmed. Install cancelled"
+    exit
+    }
+
+    elseIf ($ConfirmUpgrade -eq $true)
     {
 
     $BackUp = Confirm-Backup -ErrorAction Stop
@@ -157,6 +164,7 @@
     "Backup of $database has not been confirmed. Therefore the creation has been cancelled" | out-file $logFile -append
     Exit
     }
+
 
 
     }
@@ -831,6 +839,8 @@ Param(
 
     }
 
+    return $upgrade
+
     }
 
 
@@ -843,7 +853,7 @@ Param(
 
     }
 
-    return $upgrade
+
 
 }
 
@@ -885,7 +895,7 @@ try
         $Exists = $false
         }
 
-
+        return $exists
     }
     
 catch 
@@ -899,13 +909,13 @@ catch
 
 }
 
-function test-SQLConnection
+function test-SQLCon
 
 {
-[OutputType([bool])]
 Param(
-     [ValidateLength(0,100)]
-     [string]$ComputerName
+    [Parameter(Mandatory)]
+	[ValidateNotNullOrEmpty()]
+	[string]$ComputerName
 )
 Process
 
