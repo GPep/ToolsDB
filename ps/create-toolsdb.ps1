@@ -166,7 +166,6 @@
     }
 
 
-
     }
 
     }
@@ -200,7 +199,7 @@
        
 
        "*******************completed at $Time ***************" | out-file $logFile -append
-
+       exit
     }
    }
 
@@ -640,8 +639,8 @@ Function Change-JobOwnersScript {
 
 
         }
-         Write-Host "Job Owners Changed to $sa at" -BackgroundColor DarkGreen -ForegroundColor Yellow
-        "Job Owners Changed at $Time" | out-file $logFile -append
+         Write-Host "Job Owners Changed to $sa" -BackgroundColor DarkGreen -ForegroundColor Yellow
+        "Job Owners Changed to $sa" | out-file $logFile -append
             
 
         }
