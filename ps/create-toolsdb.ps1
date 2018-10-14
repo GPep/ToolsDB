@@ -179,11 +179,11 @@
 
     Create-Jobs $ComputerName $Source -ErrorAction Stop
 
-    Create-Alerts $ComputerName $Source -ErrorAction Stop
+    Create-Alerts $ComputerName $Source
 
-    set-Owner $ComputerName $Database $sa -ErrorAction Stop
+    set-Owner $ComputerName $Database $sa 
     
-    Change-JobOwnersScript -server $ComputerName -newchange $sa -ErrorAction Stop
+    Change-JobOwnersScript -server $ComputerName -newchange $sa 
 
     }
     catch
