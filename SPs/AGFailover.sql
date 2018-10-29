@@ -30,9 +30,12 @@ BEGIN
 DROP TABLE #PrimaryNode
 END
 
+DECLARE @agName varchar(20)
+
+SET @agName = (SELECT top 1 ag.name FROM sys.availability_groups ag)
 
 --Check if this is the Primary Node before running scripts
-IF (SELECT dbo.fn_hadr_group_is_primary('PoC') ) = 1
+IF (SELECT dbo.fn_hadr_group_is_primary(@agName) ) = 1
 BEGIN
 
 DECLARE @lastFailover [SQL_Variant]
@@ -42,23 +45,25 @@ SET @lastFailover = (SELECT TOP 1 PrimaryNode FROM AGFailoverDates
 ORDER BY CurrentDate DESC)
 
 
-
-
 --Confirm current primary node
 SELECT hags.primary_replica AS PrimaryNode, ag.name AS AG
   INTO #PrimaryNode
   FROM sys.dm_hadr_availability_group_states hags
   INNER JOIN sys.availability_groups ag ON ag.group_id = hags.group_id
 
+
 SET @PrimaryNode = (SELECT hags.primary_replica 
   FROM sys.dm_hadr_availability_group_states hags
   INNER JOIN sys.availability_groups ag ON ag.group_id = hags.group_id)
 
-IF @PrimaryNode <> @LastFailover
+
+IF @PrimaryNode <> @LastFailover OR @lastFailover IS NULL
 BEGIN
 
-INSERT INTO AGFailoverDates(PrimaryNode, AG)
-SELECT PrimaryNode, AG
+
+
+INSERT INTO AGFailoverDates(PrimaryNode)
+SELECT PrimaryNode
 FROM #PrimaryNode
 END
 

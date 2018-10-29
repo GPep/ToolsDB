@@ -36,8 +36,12 @@ DROP TABLE #PrimaryNode
 END
 
 
+DECLARE @agName varchar(20)
+
+SET @agName = (SELECT top 1 ag.name FROM sys.availability_groups ag)
+
 --Check if this is the Primary Node before running scripts
-IF (SELECT dbo.fn_hadr_group_is_primary('PoC') ) = 1
+IF (SELECT dbo.fn_hadr_group_is_primary(@agName) ) = 1
 BEGIN
 
 --Confirm current primary node
