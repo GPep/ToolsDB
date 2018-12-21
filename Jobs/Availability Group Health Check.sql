@@ -17,7 +17,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 
 END
 
-IF EXISTS (SELECT name FROM msdb.dbo.sysjobs WHERE name = 'DBA: AGFailover')
+IF EXISTS (SELECT name FROM msdb.dbo.sysjobs WHERE name = 'DBA: Availability Group Health Check')
 BEGIN
 
 EXEC msdb.dbo.sp_delete_job @job_name=N'DBA: Availability Group Health Check', @delete_unused_schedule=1

@@ -20,7 +20,7 @@ EXEC msdb.dbo.sp_add_alert @name=N'DBA: DATABASE Auto Growth Event',
 		@wmi_query=N'select * from DATA_FILE_AUTO_GROW', 
 		@job_id=N'00000000-0000-0000-0000-000000000000'
 EXEC msdb.dbo.sp_add_notification @alert_name=N'DBA: DATABASE AUTO GROWTH Event', @operator_name=@Operator, @notification_method = 7;
-EXECUTE msdb.dbo.sp_update_alert @name = 'DBA: DATABASE Auto Growth Event', @job_Name = 'DBA: Database Growth'
+EXECUTE msdb.dbo.sp_update_alert @name = 'DBA: DATABASE Auto Growth Event', @job_Name = 'DBA: Autogrowth Email Alert'
 END
 
 
@@ -39,7 +39,7 @@ EXEC msdb.dbo.sp_add_alert @name=N'DBA: LOG Auto Growth Event',
 		@wmi_query=N'SELECT * FROM LOG_FILE_AUTO_GROW', 
 		@job_id=N'00000000-0000-0000-0000-000000000000'
 EXEC msdb.dbo.sp_add_notification @alert_name=N'DBA: LOG Auto Growth Event', @operator_name=@Operator, @notification_method = 7;
-EXECUTE msdb.dbo.sp_update_alert @name = 'DBA: Log AutoGrowth Event', @job_Name = 'DBA: Log Growth'
+EXECUTE msdb.dbo.sp_update_alert @name = 'DBA: Log Auto Growth Event', @job_Name = 'DBA: Autogrowth Email Alert'
 END
 
 

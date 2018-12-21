@@ -31,6 +31,10 @@ BEGIN
 SET NOCOUNT ON;
 
 
+IF (SELECT SERVERPROPERTY('ProductMajorVersion')) > 10
+
+BEGIN
+
 DECLARE @availability_group sysname;
 
 SELECT @availability_group = (SELECT ag.name FROM sys.availability_groups ag);
@@ -49,6 +53,7 @@ RETURN
 END
 END
 
+END
 
 IF OBJECT_ID('tempdb..##Roles') IS NOT NULL
 BEGIN

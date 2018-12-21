@@ -1,18 +1,12 @@
 USE [Tools]
 GO
-
-
+/****** Object:  StoredProcedure [dbo].[CheckClusterNode]    Script Date: 21/12/2018 15:44:51 ******/
 SET ANSI_NULLS ON
 GO
-
 SET QUOTED_IDENTIFIER ON
 GO
 
-IF OBJECT_ID('CheckClusterNode') IS NULL
-  EXEC ('CREATE PROCEDURE CheckClusterNode AS RETURN 0;')
-GO
-
-ALTER PROCEDURE CheckClusterNode 
+ALTER PROCEDURE [dbo].[CheckClusterNode] 
 AS
 
 BEGIN
@@ -36,22 +30,29 @@ BEGIN
 	SET @CD = Getdate()
 	SET @N = (select SERVERPROPERTY('ComputerNamePhysicalNetBIOS') as 'Node')
 	SET @ID = (Select top 1 ID from tools.dbo.Clusternodenotification order by id desc)
-	;WITH node_CTE (id,Node)  
-AS  
-(  
-    SELECT ID, COUNT(*)  
-    FROM tools.dbo.Clusternodenotification  
-    WHERE ID IS NOT NULL  
-    GROUP BY ID  
-)  
-Select top 1  @NC = node_CTE.Node
-FROM Clusternodenotification as node_cte
-LEFT JOIN node_cte prev ON prev.ID = node_cte.ID - 1
-LEFT JOIN node_cte nex ON nex.ID = node_cte.ID + 1
-order by node_CTE.Node desc
+	;
+SELECT @NC = Node
+FROM Clusternodenotification
+ORDER BY CurrentDate
+
+IF @N = @NC
+
+		BEGIN 
+		SELECT @N
+
+SELECT @NC
+		PRINT 'This matches so no issue'
+
+END
+
+	ELSE 
 
 
-SET @CD1 = (Select top 1 currentdate from tools.dbo.Clusternodenotification order by currentdate desc)
+IF @N != @NC
+
+BEGIN 
+
+
 	
 
 	Insert into tools.dbo.Clusternodenotification
@@ -59,19 +60,8 @@ SET @CD1 = (Select top 1 currentdate from tools.dbo.Clusternodenotification orde
 
 	
 	
-IF @N = @NC
 
-		BEGIN 
 
-		PRINT 'This matches so no issue'
-
-END
-
-	ELSE 
-IF @N != @NC
-and @CD > @cd1
-
-BEGIN 
 
 
 	DECLARE @body2 varchar(800);
