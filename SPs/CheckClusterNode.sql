@@ -1,9 +1,15 @@
 USE [Tools]
 GO
-/****** Object:  StoredProcedure [dbo].[CheckClusterNode]    Script Date: 21/12/2018 15:44:51 ******/
+
+
 SET ANSI_NULLS ON
 GO
+
 SET QUOTED_IDENTIFIER ON
+GO
+
+IF OBJECT_ID('CheckClusterNode') IS NULL
+  EXEC ('CREATE PROCEDURE CheckClusterNode AS RETURN 0;')
 GO
 
 ALTER PROCEDURE [dbo].[CheckClusterNode] 

@@ -17,8 +17,10 @@
 
     [Parameter(Mandatory=$false)]
     [ValidateNotNullOrEmpty()]
-    [String]$sa = 'sa'
+    [String]$sa = 'C4rb0n'
     )
+
+    #Create-ToolsDB -ComputerName MININT-9F84K7A -Source 'C:\Users\glpepper\Documents\GitHub\ToolsDB'
 
 
  process
@@ -57,7 +59,7 @@
     {
     Write-Host "Connection to $computerName Could not be established. Install Cancelled"
     "Connection to $computerName Could not be established. Install cancelled at $time" | out-file $logFile -append
-    Exit
+    
     }
 
 
@@ -68,7 +70,7 @@
     {
     write-Host "SA account $sa could no be verified. Installed Cancelled"
     "SA Account $sa could not be verified. Install Cancelled" | out-file $login -Append
-    Exit
+
     }
 
 
@@ -95,7 +97,7 @@
     {
      write-host "The Answer was no. therefore DB Creation cancelled"
      "DB Creation cancelled by user" | out-file $logFile -append
-     Exit
+    
     }
 
     }
@@ -126,7 +128,7 @@
 
     write-host "Backup of $database has not been confirmed. Therefore the creation has been cancelled"
     "Backup of $database has not been confirmed. Therefore the creation has been cancelled" | out-file $logFile -append
-    Exit
+    
     }
 
     }
@@ -142,7 +144,6 @@
     If ($ConfirmUpgrade -eq $false)
     {
     write-host "upgrade not confirmed. Install cancelled"
-    exit
     }
 
     elseIf ($ConfirmUpgrade -eq $true)
@@ -162,7 +163,6 @@
 
     write-host "Backup of $database has not been confirmed. Therefore the creation has been cancelled"
     "Backup of $database has not been confirmed. Therefore the creation has been cancelled" | out-file $logFile -append
-    Exit
     }
 
 
@@ -190,7 +190,7 @@
 		{
             $ErrorMessage = $_.Exception.Message
             Write-Error -Message $ErrorMessage
-            "Install of $failed @ $time :  $errorMessage " | out-file $logFile -append
+            "Install failed $time :  $errorMessage " | out-file $logFile -append
 			           
 		}
 
@@ -199,7 +199,6 @@
        
 
        "*******************completed at $Time ***************" | out-file $logFile -append
-       exit
     }
    }
 
